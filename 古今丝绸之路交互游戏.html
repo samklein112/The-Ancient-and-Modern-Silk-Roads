@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古今丝绸之路</title>
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+            --accent-color: #CD853F;
+            --light-color: #F5DEB3;
+            --dark-color: #654321;
+            --text-color: #5C4033;
+            --ancient-bg: #F5E6CA;
+            --modern-bg: #E8F4F8;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><path d="M0,50 L100,50 M50,0 L50,100" stroke="%235C4033" stroke-width="0.5"/></svg>');
+        }
+        
+        /* 顶部导航 */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .progress-container {
+            flex: 1;
+            margin: 0 20px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--light-color);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* 地图区域 */
+        .map-container {
+            flex: 2;
+            position: relative;
+            background-color: #E9DCC9;
+            overflow: hidden;
+            border-right: 2px solid var(--primary-color);
+        }
+        
+        #silk-road-map {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .city-marker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .city-marker:hover {
+            width: 28px;
+            height: 28px;
+            background-color: var(--secondary-color);
+        }
+        
+        .city-marker.visited {
+            background-color: var(--accent-color);
+        }
+        
+        .city-name {
+            position: absolute;
+            font-size: 14px;
+            color: var(--text-color);
+            pointer-events: none;
+            white-space: nowrap;
+            background-color: rgba(255,255,255,0.8);
+            padding: 3px 8px;
+            border-radius: 4px;
+            transform: translate(-50%, 15px);
+            z-index: 5;
+            border: 1px solid var(--accent-color);
+        }
+        
+        /* 信息面板 */
+        .info-panel {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .city-info {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .era-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--accent-color);
+        }
+        
+        .era-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .era-tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .era-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .era-content.active {
+            display: block;
+        }
+        
+        .era-image {
+            width: 100%;
+            height: 150px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+        }
+        
+        .goods-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .goods-item {
+            background-color: white;
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* 配对游戏 */
+        .matching-game {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .matching-instructions {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .matching-area {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .matching-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .matching-column h4 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .matching-item {
+            background-color: white;
+            border: 2px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .matching-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .matching-item.selected {
+            border-color: var(--primary-color);
+            background-color: #ffeaa7;
+        }
+        
+        .matching-item.matched {
+            border-color: var(--success-color);
+            background-color: #d5f5e3;
+        }
+        
+        .matching-feedback {
+            text-align: center;
+            margin-top: 10px;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        
+        /* 成就面板 */
+        .achievements {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .achievement-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .achievement-item {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .achievement-item.unlocked {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .achievement-item .lock {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7rem;
+            color: var(--error-color);
+        }
+        
+        /* 时间线 */
+        .timeline {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-container {
+            position: relative;
+            height: 60px;
+            margin-top: 10px;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--accent-color);
+            transform: translateY(-50%);
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .timeline-marker:hover, .timeline-marker.active {
+            width: 16px;
+            height: 16px;
+            background-color: var(--secondary-color);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container {
+                border-right: none;
+                border-bottom: 2px solid var(--primary-color);
+                height: 40%;
+            }
+            
+            .matching-area {
+                flex-direction: column;
+            }
+        }
+        
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: var(--light-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .modal-title {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .modal-close {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        /* 操作指引 */
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            max-width: 300px;
+            z-index: 15;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部导航 -->
+        <div class="top-nav">
+            <div class="logo">古今丝绸之路</div>
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>探索进度</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+            </div>
+            <div class="player-info">文化探险者</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 地图区域 -->
+            <div class="map-container">
+                <canvas id="silk-road-map"></canvas>
+                <!-- 城市标记将通过JS动态添加 -->
+                
+                <!-- 操作指引 -->
+                <div class="instructions">
+                    <strong>操作指引：</strong><br>
+                    1. 点击地图上的城市标记<br>
+                    2. 查看古代和现代信息<br>
+                    3. 完成古今物品配对游戏<br>
+                    4. 收集成就
+                </div>
+            </div>
+            
+            <!-- 信息面板 -->
+            <div class="info-panel">
+                <div class="city-info">
+                    <h2 id="current-city">点击地图上的城市开始探索</h2>
+                    <div class="era-tabs">
+                        <div class="era-tab active" data-era="ancient">古代</div>
+                        <div class="era-tab" data-era="modern">现代</div>
+                    </div>
+                    <div class="era-content active" id="ancient-content">
+                        <p>选择一个城市以查看其古代面貌</p>
+                    </div>
+                    <div class="era-content" id="modern-content">
+                        <p>选择一个城市以查看其现代面貌</p>
+                    </div>
+                </div>
+                
+                <div class="matching-game">
+                    <h3>古今配对</h3>
+                    <div class="matching-instructions">
+                        <p>将古代的贸易物品与现代的对应物品进行配对</p>
+                    </div>
+                    <div class="matching-area">
+                        <div class="matching-column">
+                            <h4>古代物品</h4>
+                            <div id="ancient-items">
+                                <!-- 古代物品将通过JS动态添加 -->
+                            </div>
+                        </div>
+                        <div class="matching-column">
+                            <h4>现代物品</h4>
+                            <div id="modern-items">
+                                <!-- 现代物品将通过JS动态添加 -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="matching-feedback" id="matching-feedback"></div>
+                </div>
+                
+                <div class="achievements">
+                    <h3>收集成就</h3>
+                    <div class="achievement-list" id="achievement-container">
+                        <!-- 成就将通过JS动态添加 -->
+                    </div>
+                </div>
+                
+                <div class="timeline">
+                    <h3>丝绸之路时间线</h3>
+                    <div class="timeline-container">
+                        <div class="timeline-line"></div>
+                        <!-- 时间线标记将通过JS动态添加 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就解锁模态框 -->
+    <div id="achievement-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">成就解锁！</h2>
+            <div id="achievement-details">
+                <!-- 成就详情将通过JS动态添加 -->
+            </div>
+            <button class="modal-close" id="close-achievement-btn">继续探索</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据
+        const gameData = {
+            cities: {
+                xiAn: {
+                    name: "西安",
+                    ancient: {
+                        name: "长安",
+                        description: "长安是丝绸之路的起点，作为大唐帝国的首都，是当时世界上最大、最繁华的城市之一。来自世界各地的商人、僧侣和使节汇聚于此，进行文化和商品交流。长安城布局规整，市场繁荣，是东方文明的璀璨明珠。",
+                        goods: ["丝绸", "瓷器", "茶叶", "纸张", "漆器", "铜镜"]
+                    },
+                    modern: {
+                        description: "现代西安是陕西省省会，中国西部地区重要的中心城市。它既是历史文化名城，也是现代化大都市，是一带一路倡议的重要节点城市。西安高新技术产业开发区、曲江新区等现代化区域与古城墙、钟鼓楼等历史遗迹和谐共存。",
+                        goods: ["电子产品", "机械设备", "农产品", "纺织品", "汽车零部件", "航空航天设备"]
+                    },
+                    position: { x: 0.1, y: 0.5 },
+                    matches: [
+                        { ancient: "丝绸", modern: "纺织品" },
+                        { ancient: "瓷器", modern: "工艺品" },
+                        { ancient: "茶叶", modern: "农产品" }
+                    ]
+                },
+                dunHuang: {
+                    name: "敦煌",
+                    ancient: {
+                        description: "敦煌是丝绸之路上的重要枢纽，以莫高窟闻名于世。这里是东西方文化交流的重要节点，佛教艺术在此达到巅峰。敦煌作为河西走廊的门户，见证了无数商队、僧侣和使节的往来。",
+                        goods: ["玉石", "香料", "佛经", "壁画", "骆驼", "药材"]
+                    },
+                    modern: {
+                        description: "现代敦煌是世界文化遗产地，以旅游业为主要产业。莫高窟、鸣沙山和月牙泉吸引着全球游客，同时新能源产业也在快速发展。敦煌文博会的举办进一步提升了其国际影响力。",
+                        goods: ["旅游服务", "文创产品", "新能源设备", "农产品", "手工艺品", "数字文化产品"]
+                    },
+                    position: { x: 0.3, y: 0.45 },
+                    matches: [
+                        { ancient: "佛经", modern: "文创产品" },
+                        { ancient: "壁画", modern: "手工艺品" },
+                        { ancient: "香料", modern: "农产品" }
+                    ]
+                },
+                samarKand: {
+                    name: "撒马尔罕",
+                    ancient: {
+                        description: "撒马尔罕是中亚最古老的城市之一，丝绸之路上的重要枢纽。以其蓝色圆顶建筑和伊斯兰学术中心闻名，是帖木儿帝国的首都。这里的雷吉斯坦广场是古代伊斯兰教育的中心。",
+                        goods: ["宝石", "玻璃器", "地毯", "香料", "纸张", "金属工艺品"]
+                    },
+                    modern: {
+                        description: "现代撒马尔罕是乌兹别克斯坦第二大城市，联合国教科文组织世界遗产地。它保留了丰富的历史遗迹，同时发展了纺织、食品加工等现代产业。撒马尔罕作为旅游城市，吸引着世界各地的游客。",
+                        goods: ["纺织品", "食品", "手工艺品", "化工产品", "机械设备", "旅游服务"]
+                    },
+                    position: { x: 0.5, y: 0.4 },
+                    matches: [
+                        { ancient: "地毯", modern: "纺织品" },
+                        { ancient: "纸张", modern: "化工产品" },
+                        { ancient: "玻璃器", modern: "手工艺品" }
+                    ]
+                },
+                baghdad: {
+                    name: "巴格达",
+                    ancient: {
+                        description: "巴格达是阿拔斯王朝的首都，伊斯兰黄金时代的学术中心。这里的智慧宫汇集了世界各地的学者，翻译并发展了古希腊、波斯和印度的知识。巴格达在当时是世界上最富庶的城市之一。",
+                        goods: ["香料", "药材", "书籍", "Quran经卷", "天文仪器", "香水"]
+                    },
+                    modern: {
+                        description: "现代巴格达是伊拉克首都，尽管经历了战乱，仍然是中东地区重要的政治、经济和文化中心。石油产业是其经济支柱，同时正在重建历史文化遗迹，恢复其往日荣光。",
+                        goods: ["石油", "石化产品", "建筑材料", "食品", "药品", "日用品"]
+                    },
+                    position: { x: 0.7, y: 0.45 },
+                    matches: [
+                        { ancient: "药材", modern: "药品" },
+                        { ancient: "香料", modern: "食品" },
+                        { ancient: "天文仪器", modern: "石化产品" }
+                    ]
+                },
+                istanbul: {
+                    name: "伊斯坦布尔",
+                    ancient: {
+                        name: "君士坦丁堡",
+                        description: "君士坦丁堡是东罗马帝国的首都，连接欧亚的贸易枢纽。这里的黄金角湾是各国商船的聚集地，丝绸之路的西方终点。圣索菲亚大教堂是拜占庭建筑的杰出代表。",
+                        goods: ["金银器", "葡萄酒", "东罗马金币", "丝绸", "圣像", "玻璃制品"]
+                    },
+                    modern: {
+                        description: "现代伊斯坦布尔是土耳其最大城市，横跨欧亚大陆。它是重要的旅游、文化和经济中心，保留了丰富的历史遗产的同时发展了现代产业。博斯普鲁斯海峡大桥连接着欧洲和亚洲。",
+                        goods: ["纺织品", "汽车", "电子产品", "食品", "旅游服务", "化工产品"]
+                    },
+                    position: { x: 0.9, y: 0.4 },
+                    matches: [
+                        { ancient: "丝绸", modern: "纺织品" },
+                        { ancient: "葡萄酒", modern: "食品" },
+                        { ancient: "金银器", modern: "电子产品" }
+                    ]
+                }
+            },
+            
+            timeline: [
+                { year: "公元前138年", event: "张骞出使西域", description: "汉武帝派遣张骞出使西域，正式开辟丝绸之路，促进了东西方文化交流。" },
+                { year: "公元97年", event: "班超派遣甘英出使罗马", description: "东汉时期，班超派遣甘英出使罗马帝国，抵达波斯湾，进一步拓展了丝绸之路。" },
+                { year: "公元629年", event: "玄奘西行", description: "唐代高僧玄奘从长安出发，前往印度取经，著有《大唐西域记》，促进了佛教传播。" },
+                { year: "公元1271年", event: "马可·波罗东行", description: "意大利旅行家马可·波罗启程前往中国，其游记向欧洲介绍了东方的富庶与文明。" },
+                { year: "公元2013年", event: "一带一路倡议", description: "中国提出共建丝绸之路经济带和21世纪海上丝绸之路，复兴古老的贸易与文化通道。" }
+            ],
+            
+            achievements: [
+                { id: "start", name: "起点", description: "访问丝绸之路起点西安", icon: "🏁" },
+                { id: "dunhuang", name: "艺术宝库", description: "探索敦煌莫高窟", icon: "🎨" },
+                { id: "samarkand", name: "蓝色明珠", description: "访问撒马尔罕", icon: "🔷" },
+                { id: "baghdad", name: "智慧之城", description: "探索巴格达历史", icon: "📚" },
+                { id: "istanbul", name: "东西交汇", description: "抵达伊斯坦布尔", icon: "🌉" },
+                { id: "matchMaster", name: "配对大师", description: "完成所有城市的古今配对", icon: "🧩" },
+                { id: "explorer", name: "丝路探险家", description: "访问所有丝绸之路城市", icon: "🗺️" }
+            ]
+        };
+
+        // 游戏状态
+        let gameState = {
+            currentCity: null,
+            visitedCities: [],
+            unlockedAchievements: [],
+            matchedPairs: {},
+            progress: 0,
+            selectedAncient: null,
+            selectedModern: null
+        };
+
+        // 初始化游戏
+        function initGame() {
+            // 绑定事件监听器
+            bindEventListeners();
+            
+            // 绘制地图
+            drawMap();
+            
+            // 初始化成就显示
+            updateAchievementsDisplay();
+            
+            // 初始化时间线
+            initTimeline();
+            
+            // 更新进度
+            updateProgress();
+            
+            // 默认选择西安作为起始城市
+            setTimeout(() => {
+                selectCity('xiAn');
+            }, 500);
+        }
+
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 关闭成就模态框按钮
+            document.getElementById('close-achievement-btn').addEventListener('click', function() {
+                document.getElementById('achievement-modal').style.display = 'none';
+            });
+            
+            // 时代标签切换
+            document.querySelectorAll('.era-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchEraTab(this.getAttribute('data-era'));
+                });
+            });
+        }
+
+        // 绘制丝绸之路地图
+        function drawMap() {
+            const canvas = document.getElementById('silk-road-map');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置Canvas尺寸
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // 绘制背景
+            ctx.fillStyle = '#E9DCC9';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制丝绸之路路径（古代）
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.1, canvas.height * 0.5);
+            ctx.bezierCurveTo(
+                canvas.width * 0.3, canvas.height * 0.4,
+                canvas.width * 0.5, canvas.height * 0.35,
+                canvas.width * 0.9, canvas.height * 0.4
+            );
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制现代交通路线
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.1, canvas.height * 0.55);
+            ctx.bezierCurveTo(
+                canvas.width * 0.3, canvas.height * 0.5,
+                canvas.width * 0.5, canvas.height * 0.45,
+                canvas.width * 0.9, canvas.height * 0.45
+            );
+            ctx.strokeStyle = '#4682B4';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制城市标记
+            for (const cityId in gameData.cities) {
+                const city = gameData.cities[cityId];
+                const x = canvas.width * city.position.x;
+                const y = canvas.height * city.position.y;
+                
+                // 创建城市标记元素
+                const marker = document.createElement('div');
+                marker.className = `city-marker ${gameState.visitedCities.includes(cityId) ? 'visited' : ''}`;
+                marker.style.left = `${x}px`;
+                marker.style.top = `${y}px`;
+                marker.setAttribute('data-city', cityId);
+                marker.textContent = '●';
+                
+                // 添加点击事件
+                marker.addEventListener('click', function() {
+                    selectCity(cityId);
+                });
+                
+                const name = document.createElement('div');
+                name.className = 'city-name';
+                name.textContent = city.name;
+                name.style.left = `${x}px`;
+                name.style.top = `${y}px`;
+                
+                canvas.parentElement.appendChild(marker);
+                canvas.parentElement.appendChild(name);
+            }
+        }
+
+        // 选择城市
+        function selectCity(cityId) {
+            gameState.currentCity = cityId;
+            const city = gameData.cities[cityId];
+            
+            // 更新城市信息显示
+            document.getElementById('current-city').textContent = city.name;
+            
+            // 更新古代信息
+            const ancientContent = document.getElementById('ancient-content');
+            ancientContent.innerHTML = `
+                <h3>${city.ancient.name || city.name}（古代）</h3>
+                <div class="era-image">[${city.name}古代图像]</div>
+                <p>${city.ancient.description}</p>
+                <h4>主要贸易物品：</h4>
+                <div class="goods-list">
+                    ${city.ancient.goods.map(good => `<div class="goods-item">${good}</div>`).join('')}
+                </div>
+            `;
+            
+            // 更新现代信息
+            const modernContent = document.getElementById('modern-content');
+            modernContent.innerHTML = `
+                <h3>${city.name}（现代）</h3>
+                <div class="era-image">[${city.name}现代图像]</div>
+                <p>${city.modern.description}</p>
+                <h4>主要贸易物品：</h4>
+                <div class="goods-list">
+                    ${city.modern.goods.map(good => `<div class="goods-item">${good}</div>`).join('')}
+                </div>
+            `;
+            
+            // 如果这是第一次访问该城市，添加到已访问列表
+            if (!gameState.visitedCities.includes(cityId)) {
+                gameState.visitedCities.push(cityId);
+                
+                // 更新地图标记
+                document.querySelector(`.city-marker[data-city="${cityId}"]`).classList.add('visited');
+                
+                // 检查是否解锁成就
+                checkAchievements(cityId);
+                
+                // 更新进度
+                updateProgress();
+            }
+            
+            // 初始化配对游戏
+            initMatchingGame(cityId);
+        }
+
+        // 切换时代标签
+        function switchEraTab(era) {
+            // 更新标签状态
+            document.querySelectorAll('.era-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.era-tab[data-era="${era}"]`).classList.add('active');
+            
+            // 更新内容显示
+            document.querySelectorAll('.era-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${era}-content`).classList.add('active');
+        }
+
+        // 初始化配对游戏
+        function initMatchingGame(cityId) {
+            const city = gameData.cities[cityId];
+            const ancientContainer = document.getElementById('ancient-items');
+            const modernContainer = document.getElementById('modern-items');
+            const feedback = document.getElementById('matching-feedback');
+            
+            // 清空容器和反馈
+            ancientContainer.innerHTML = '';
+            modernContainer.innerHTML = '';
+            feedback.textContent = '';
+            
+            // 重置选中状态
+            gameState.selectedAncient = null;
+            gameState.selectedModern = null;
+            
+            // 初始化匹配状态（如果不存在）
+            if (!gameState.matchedPairs[cityId]) {
+                gameState.matchedPairs[cityId] = {};
+            }
+            
+            // 添加古代物品
+            city.matches.forEach((match, index) => {
+                const item = document.createElement('div');
+                item.className = `matching-item ${gameState.matchedPairs[cityId][match.ancient] ? 'matched' : ''}`;
+                item.textContent = match.ancient;
+                item.setAttribute('data-type', 'ancient');
+                item.setAttribute('data-value', match.ancient);
+                item.addEventListener('click', handleMatchingItemClick);
+                ancientContainer.appendChild(item);
+            });
+            
+            // 添加现代物品（随机顺序）
+            const shuffledMatches = [...city.matches].sort(() => Math.random() - 0.5);
+            shuffledMatches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = `matching-item ${gameState.matchedPairs[cityId][match.ancient] ? 'matched' : ''}`;
+                item.textContent = match.modern;
+                item.setAttribute('data-type', 'modern');
+                item.setAttribute('data-value', match.modern);
+                item.setAttribute('data-pair', match.ancient);
+                item.addEventListener('click', handleMatchingItemClick);
+                modernContainer.appendChild(item);
+            });
+        }
+
+        // 处理配对物品点击
+        function handleMatchingItemClick() {
+            const type = this.getAttribute('data-type');
+            const value = this.getAttribute('data-value');
+            const cityId = gameState.currentCity;
+            const feedback = document.getElementById('matching-feedback');
+            
+            // 如果已经匹配成功，不处理点击
+            if (this.classList.contains('matched')) return;
+            
+            // 清除之前的选中状态
+            document.querySelectorAll('.matching-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 设置当前选中状态
+            this.classList.add('selected');
+            
+            // 更新选中状态
+            if (type === 'ancient') {
+                gameState.selectedAncient = {
+                    element: this,
+                    value: value
+                };
+            } else {
+                gameState.selectedModern = {
+                    element: this,
+                    value: value,
+                    pair: this.getAttribute('data-pair')
+                };
+            }
+            
+            // 检查是否有配对的选中项
+            if (gameState.selectedAncient && gameState.selectedModern) {
+                // 检查是否正确匹配
+                if (gameState.selectedAncient.value === gameState.selectedModern.pair) {
+                    // 匹配成功
+                    feedback.textContent = "配对成功！";
+                    feedback.style.color = 'var(--success-color)';
+                    
+                    gameState.selectedAncient.element.classList.add('matched');
+                    gameState.selectedModern.element.classList.add('matched');
+                    gameState.selectedAncient.element.classList.remove('selected');
+                    gameState.selectedModern.element.classList.remove('selected');
+                    
+                    // 更新匹配状态
+                    gameState.matchedPairs[cityId][gameState.selectedAncient.value] = true;
+                    
+                    // 重置选中状态
+                    gameState.selectedAncient = null;
+                    gameState.selectedModern = null;
+                    
+                    // 检查是否完成所有匹配
+                    checkAllMatches(cityId);
+                    
+                    // 更新进度
+                    updateProgress();
+                } else {
+                    // 匹配失败
+                    feedback.textContent = "配对错误，请再试一次";
+                    feedback.style.color = 'var(--error-color)';
+                    
+                    // 短暂延迟后清除选中状态
+                    setTimeout(() => {
+                        gameState.selectedAncient.element.classList.remove('selected');
+                        gameState.selectedModern.element.classList.remove('selected');
+                        gameState.selectedAncient = null;
+                        gameState.selectedModern = null;
+                        feedback.textContent = '';
+                    }, 1000);
+                }
+            }
+        }
+
+        // 检查城市所有配对是否完成
+        function checkAllMatches(cityId) {
+            const city = gameData.cities[cityId];
+            const allMatched = city.matches.every(match => 
+                gameState.matchedPairs[cityId][match.ancient]
+            );
+            
+            if (allMatched) {
+                // 显示成功消息
+                setTimeout(() => {
+                    alert(`恭喜！你已完成${city.name}的所有古今配对！`);
+                }, 500);
+            }
+        }
+
+        // 检查成就
+        function checkAchievements(cityId) {
+            const cityAchievements = {
+                'xiAn': 'start',
+                'dunHuang': 'dunhuang',
+                'samarKand': 'samarkand',
+                'baghdad': 'baghdad',
+                'istanbul': 'istanbul'
+            };
+            
+            // 检查城市成就
+            if (cityAchievements[cityId] && !gameState.unlockedAchievements.includes(cityAchievements[cityId])) {
+                unlockAchievement(cityAchievements[cityId]);
+            }
+            
+            // 检查是否访问了所有城市
+            const allCitiesVisited = Object.keys(gameData.cities).every(cityId => 
+                gameState.visitedCities.includes(cityId)
+            );
+            
+            if (allCitiesVisited && !gameState.unlockedAchievements.includes('explorer')) {
+                unlockAchievement('explorer');
+            }
+            
+            // 检查是否完成所有配对
+            const allCitiesMatched = Object.keys(gameData.cities).every(cityId => {
+                const city = gameData.cities[cityId];
+                return city.matches.every(match => 
+                    gameState.matchedPairs[cityId] && gameState.matchedPairs[cityId][match.ancient]
+                );
+            });
+            
+            if (allCitiesMatched && !gameState.unlockedAchievements.includes('matchMaster')) {
+                unlockAchievement('matchMaster');
+            }
+        }
+
+        // 解锁成就
+        function unlockAchievement(achievementId) {
+            if (!gameState.unlockedAchievements.includes(achievementId)) {
+                gameState.unlockedAchievements.push(achievementId);
+                updateAchievementsDisplay();
+                
+                // 显示成就解锁模态框
+                const achievement = gameData.achievements.find(a => a.id === achievementId);
+                document.getElementById('achievement-details').innerHTML = `
+                    <div style="font-size: 3rem; margin: 10px 0;">${achievement.icon}</div>
+                    <h3>${achievement.name}</h3>
+                    <p>${achievement.description}</p>
+                `;
+                document.getElementById('achievement-modal').style.display = 'flex';
+            }
+        }
+
+        // 更新成就显示
+        function updateAchievementsDisplay() {
+            const container = document.getElementById('achievement-container');
+            container.innerHTML = '';
+            
+            gameData.achievements.forEach(achievement => {
+                const item = document.createElement('div');
+                item.className = `achievement-item ${gameState.unlockedAchievements.includes(achievement.id) ? 'unlocked' : ''}`;
+                item.innerHTML = `
+                    ${gameState.unlockedAchievements.includes(achievement.id) ? achievement.icon : '🔒'}
+                    ${!gameState.unlockedAchievements.includes(achievement.id) ? '<div class="lock">🔒</div>' : ''}
+                `;
+                item.title = `${achievement.name}: ${achievement.description}`;
+                container.appendChild(item);
+            });
+        }
+
+        // 初始化时间线
+        function initTimeline() {
+            const container = document.querySelector('.timeline-container');
+            
+            gameData.timeline.forEach((point, index) => {
+                const marker = document.createElement('div');
+                marker.className = 'timeline-marker';
+                marker.style.left = `${(index / (gameData.timeline.length - 1)) * 100}%`;
+                marker.setAttribute('data-index', index);
+                marker.addEventListener('click', function() {
+                    showTimelineEvent(index);
+                });
+                container.appendChild(marker);
+            });
+        }
+
+        // 显示时间线事件
+        function showTimelineEvent(index) {
+            const event = gameData.timeline[index];
+            alert(`${event.year}: ${event.event}\n\n${event.description}`);
+        }
+
+        // 更新进度
+        function updateProgress() {
+            // 计算访问城市进度 (权重50%)
+            const cityProgress = gameState.visitedCities.length / Object.keys(gameData.cities).length * 50;
+            
+            // 计算配对游戏进度 (权重50%)
+            let matchProgress = 0;
+            let totalMatches = 0;
+            let completedMatches = 0;
+            
+            Object.keys(gameData.cities).forEach(cityId => {
+                const city = gameData.cities[cityId];
+                totalMatches += city.matches.length;
+                
+                if (gameState.matchedPairs[cityId]) {
+                    completedMatches += Object.keys(gameState.matchedPairs[cityId]).length;
+                }
+            });
+            
+            if (totalMatches > 0) {
+                matchProgress = (completedMatches / totalMatches) * 50;
+            }
+            
+            gameState.progress = Math.min(cityProgress + matchProgress, 100);
+            updateProgressBar();
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            document.getElementById('progress-bar').style.width = `${gameState.progress}%`;
+            document.getElementById('progress-percent').textContent = `${Math.round(gameState.progress)}%`;
+        }
+
+        // 初始化游戏
+        window.addEventListener('load', initGame);
+        
+        // 窗口大小变化时重绘地图
+        window.addEventListener('resize', drawMap);
+    </script>
+</body>
+</html>
